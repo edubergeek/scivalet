@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "mariadb_alchemy": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcp-alchemy==2025.8.15.91819",
+        "--with",
+        "mariadb",
+        "mcp-alchemy"
+      ],
+      "env": {
+        "DB_URL": ""
+      }
+    }
+  }
+}
