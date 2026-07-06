@@ -49,3 +49,42 @@ Created and verified the complete database architecture in `backend/models.py`:
   - `test_user_preference_prompt`: PASS
   - `test_user_heterogeneous_context`: PASS
   - `test_publications_and_recommendations`: PASS
+
+---
+
+# Release Notes: scivalet - Phase 2
+
+Welcome to Phase 2 of **scivalet** ("Science Reading List Recommender"). In this phase, we implemented the core background engines that query online publication repositories and score/filter papers based on user preferences.
+
+## 🚀 New Features
+
+### 1. Environment & Credential Orchestration
+- Created a local `.env` configuration template for credentials.
+- Parametrizing database credentials (`SCIVALET_USER` and `SCIVALET_PASS`) in `docker-compose.yml` for all database, backend, and cron tasks.
+
+### 2. Publication Harvester Ingestion Engine
+- Implemented the background `Harvester` daemon (`backend/harvester.py`).
+- Integrated queries to the public **arXiv API** via native Python `urllib` parsing XML feed nodes using standard libraries (preventing OWASP vulnerability issues).
+- Created mock integrations for Harvard ADS and Google Scholar searches.
+- Handled deduplication logic to ensure publications are stored uniquely in MariaDB.
+
+### 3. User Interest Inference & Scoring Engine
+- Implemented the `InferenceEngine` (`backend/inference.py`).
+- Ingests non-interactive user context items (invited talks, repositories, social logs) to infer positive keyword interests using the ADS keyword taxonomy.
+- Computes matching scores for new publications based on user-defined prompt overlap and explicit positive keywords.
+- **Negation Filtering**: Automatically filters out papers matching user-specified negated keywords.
+
+### 4. Background Workers & API Triggers
+- Updated the periodic worker scheduler (`backend/cron_scheduler.py`) to trigger the harvest and inference loops every 5 minutes.
+- Added API endpoints in `backend/main.py`:
+  - `POST /api/context`: Ingest user context.
+  - `POST /api/jobs/harvest`: Manually trigger paper harvesting.
+  - `POST /api/jobs/infer`: Manually trigger interest scoring.
+
+---
+
+## 🧪 Verification & Unit Testing
+- Developed automated tests in `backend/tests/test_engines.py` verifying the XML parser, harvester deduplication, and inference negation filtering.
+- Executed and validated all tests successfully inside Docker (9/9 tests passed).
+- Verified the complete end-to-end user preference-harvest-inference flow in MariaDB via a mock integration test script.
+

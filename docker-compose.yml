@@ -7,15 +7,15 @@ services:
     restart: always
     environment:
       MYSQL_DATABASE: scivalet
-      MYSQL_USER: scivalet_user
-      MYSQL_PASSWORD: scivalet_pass
+      MYSQL_USER: ${SCIVALET_USER}
+      MYSQL_PASSWORD: ${SCIVALET_PASS}
       MYSQL_ROOT_PASSWORD: secret
     ports:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "scivalet_user", "-pwrap_pass_not_needed_for_ping"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${SCIVALET_USER}", "-pwrap_pass_not_needed_for_ping" ]
       interval: 3s
       timeout: 3s
       retries: 10
@@ -27,7 +27,7 @@ services:
     container_name: scivalet-backend
     restart: always
     environment:
-      - DB_URL=mariadb+mariadbconnector://scivalet_user:scivalet_pass@db:3306/scivalet
+      - DB_URL=mariadb+mariadbconnector://${SCIVALET_USER}:${SCIVALET_PASS}@db:3306/scivalet
     ports:
       - "8000:8000"
     depends_on:
@@ -53,7 +53,7 @@ services:
     container_name: scivalet-cron
     restart: always
     environment:
-      - DB_URL=mariadb+mariadbconnector://scivalet_user:scivalet_pass@db:3306/scivalet
+      - DB_URL=mariadb+mariadbconnector://${SCIVALET_USER}:${SCIVALET_PASS}@db:3306/scivalet
     command: python backend/cron_scheduler.py
     depends_on:
       db:

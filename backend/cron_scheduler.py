@@ -1,20 +1,24 @@
 import time
 import sys
+from backend.harvester import Harvester
+from backend.inference import InferenceEngine
 
 def runScheduler():
     """
     Simulates a cron scheduler running background jobs periodically.
     """
-    sleepInterval = 60 # Sleep for 60 seconds between runs in the background
-    print("scivalet Cron Scheduler started. Running jobs every 60 seconds...", flush=True)
+    sleepInterval = 300 # Sleep for 5 minutes between runs in the background
+    print(f"scivalet Cron Scheduler started. Running jobs every {sleepInterval} seconds...", flush=True)
     
     while True:
         try:
             print("--- Triggering Harvester Daemon ---", flush=True)
-            # Future: call harvester script / function
+            harvesterInstance = Harvester()
+            harvesterInstance.runHarvest()
             
             print("--- Triggering Inference Engine ---", flush=True)
-            # Future: call inference script / function
+            engineInstance = InferenceEngine()
+            engineInstance.runInference()
             
             print(f"Scheduled tasks completed. Sleeping for {sleepInterval} seconds.", flush=True)
         except Exception as e:

@@ -7,6 +7,8 @@ import datetime
 
 from backend.database import getDatabase, dbEngine, databaseBase
 from backend.models import User, Keyword, Preference, UserContext, Publication, Recommendation
+from backend.harvester import Harvester
+from backend.inference import InferenceEngine
 
 # Initialize Database tables with a retry mechanism
 import time
@@ -87,6 +89,12 @@ class RecommendationResponse(BaseModel):
 
 class FeedbackRequest(BaseModel):
     feedback: str # 'UPVOTE', 'DOWNVOTE', 'NONE'
+
+class ContextCreate(BaseModel):
+    userId: int
+    contextType: str
+    contentData: str
+    sourceUrl: Optional[str] = None
 
 
 @app.get("/")
@@ -199,3 +207,43 @@ def submitFeedback(recId: int, feedbackReq: FeedbackRequest, dbSession: Session 
     targetRec.feedback = feedbackReq.feedback.upper()
     dbSession.commit()
     return {"status": "success", "message": "Feedback registered successfully"}
+
+
+@app.post("/api/context")
+def addContext(contextReq: ContextCreate, dbSession: Session = Depends(getDatabase)):
+    """
+    Ingest a new contextual reference/document (social post, talk details, repo) for a user.
+    """
+    targetUser = dbSession.query(User).filter(User.id == contextReq.userId).first()
+    if not targetUser:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    newContext = UserContext(
+        userId=contextReq.userId,
+        contextType=contextReq.contextType,
+        contentData=contextReq.contentData,
+        sourceUrl=contextReq.sourceUrl
+    )
+    dbSession.add(newContext)
+    dbSession.commit()
+    return {"status": "success", "message": "Context ingested successfully"}
+
+
+@app.post("/api/jobs/harvest")
+def triggerHarvestJob(dbSession: Session = Depends(getDatabase)):
+    """
+    Manually triggers the arXiv Harvester scan job.
+    """
+    harvesterInstance = Harvester(dbSession=dbSession)
+    newPublicationsCount = harvesterInstance.runHarvest()
+    return {"status": "success", "newPublications": newPublicationsCount}
+
+
+@app.post("/api/jobs/infer")
+def triggerInferenceJob(dbSession: Session = Depends(getDatabase)):
+    """
+    Manually triggers the Preference Inference and recommendation scoring engine.
+    """
+    engineInstance = InferenceEngine(dbSession=dbSession)
+    recommendationCount = engineInstance.runInference()
+    return {"status": "success", "updatedRecommendations": recommendationCount}
