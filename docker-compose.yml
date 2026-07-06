@@ -9,7 +9,7 @@ services:
       MYSQL_DATABASE: scivalet
       MYSQL_USER: ${SCIVALET_USER}
       MYSQL_PASSWORD: ${SCIVALET_PASS}
-      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
