@@ -60,7 +60,7 @@ Welcome to Phase 2 of **scivalet** ("Science Reading List Recommender"). In this
 
 ### 1. Environment & Credential Orchestration
 - Created a local `.env` configuration template for credentials.
-- Parametrizing database credentials (`SCIVALET_USER` and `SCIVALET_PASS`) in `docker-compose.yml` for all database, backend, and cron tasks.
+- Parametrizing database credentials (`MYSQL_ROOT_PASSWORD`, `SCIVALET_USER` and `SCIVALET_PASS`) in `docker-compose.yml` for all database, backend, and cron tasks.
 
 ### 2. Publication Harvester Ingestion Engine
 - Implemented the background `Harvester` daemon (`backend/harvester.py`).
